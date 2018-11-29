@@ -46,24 +46,34 @@ class Dataset(torch.utils.data.Dataset):
         # raise NotImplementedError
         # image_path = sorted(glob.glob(os.path.join(self._path_to_data, self._mode.value, '*')))[index]
         # image = Image.open(image_path)
-        # image = np.array(image)
-        # image = Image.fromarray(image)
+        # print(type(image))
         # image = self.preprocess(image)
 
         path_to_mat = os.path.join(self._path_to_data, self._mode.value, 'digitStruct.mat')
         _h5py_file = h5py.File(path_to_mat)
         _h5py_data = _h5py_file.get('digitStruct')
-        _bbox = _h5py_data.get('bbox')
         _name = _h5py_data.get('name')
         _name_ref = _name[index][0]
         _obj_name = _h5py_data.get(_name_ref)
         _image_filename = ''.join(chr(i) for i in _obj_name[:])
-        print(_image_filename)
         _path_to_image = os.path.join(self._path_to_data, self._mode.value, _image_filename)
         image = Image.open(_path_to_image)
         image = self.preprocess(image)
 
-        return image
+        map_of_bbox = {}
+        item = _h5py_file['digitStruct']['bbox'][index].item()
+        for key in ['label', 'left', 'top', 'width', 'height']:
+            attr = _h5py_file[item][key]
+            values = [_h5py_file[attr.value[i].item()].value[0][0] for i in range(len(attr))] if len(attr) > 1 else [
+                attr.value[0][0]]
+            map_of_bbox[key] = values
+
+        length = len(map_of_bbox['label'])
+        digits = [10, 10, 10, 10, 10]
+        for idx in range(length):
+            digits[idx] = map_of_bbox['label'][idx]
+
+        return image, length, digits
         # TODO: CODE END
 
     @staticmethod
@@ -81,4 +91,6 @@ class Dataset(torch.utils.data.Dataset):
 
 if __name__ == '__main__':
     _dataset = Dataset(path_to_data_dir='./data', mode=Dataset.Mode.TRAIN)
-    a = _dataset[10][0]
+    _image, _length, _digits = _dataset[6666]
+    print('length: %d' % _length)
+    print('digits: %d, %d, %d, %d, %d' % (_digits[0], _digits[1], _digits[2], _digits[3], _digits[4]))
