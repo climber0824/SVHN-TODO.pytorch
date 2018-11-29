@@ -45,7 +45,7 @@ def _train(path_to_data_dir: str, path_to_checkpoints_dir: str):
     while not should_stop:
         # TODO: CODE BEGIN
         # raise NotImplementedError
-        for batch_idx, (image, length_labels, digits_labels) in enumerate(train_loader):
+        for batch_idx, (images, length_labels, digits_labels) in enumerate(train_loader):
             images, length_labels, digits_labels = (Variable(images.cuda()),
                                                     Variable(length_labels.cuda()),
                                                     [Variable(digit_labels.cuda()) for digit_labels in digits_labels])
@@ -55,8 +55,9 @@ def _train(path_to_data_dir: str, path_to_checkpoints_dir: str):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-
+            print(step)
             step += 1
+            losses.append(loss)
 
             if step % steps_to_show_loss == 0:
                 elapsed_time = time.time() - time_checkpoint

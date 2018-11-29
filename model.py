@@ -116,13 +116,12 @@ class Model(nn.Module):
     def loss(self, length_logits: Tensor, digits_logits: Tensor, length_labels: Tensor, digits_labels: Tensor) -> Tensor:
         # TODO: CODE BEGIN
         # raise NotImplementedError
-        loss_function = torch.nn.functional.cross_entropy()
-        length_loss = loss_function(length_logits, length_labels)
-        digit1_loss = loss_function(digits_logits[0], digits_labels[0])
-        digit2_loss = loss_function(digits_logits[1], digits_labels[1])
-        digit3_loss = loss_function(digits_logits[2], digits_labels[2])
-        digit4_loss = loss_function(digits_logits[3], digits_labels[3])
-        digit5_loss = loss_function(digits_logits[4], digits_labels[4])
+        length_loss = torch.nn.functional.cross_entropy(length_logits, length_labels)
+        digit1_loss = torch.nn.functional.cross_entropy(digits_logits[0], digits_labels[0].long())
+        digit2_loss = torch.nn.functional.cross_entropy(digits_logits[1], digits_labels[1].long())
+        digit3_loss = torch.nn.functional.cross_entropy(digits_logits[2], digits_labels[2].long())
+        digit4_loss = torch.nn.functional.cross_entropy(digits_logits[3], digits_labels[3].long())
+        digit5_loss = torch.nn.functional.cross_entropy(digits_logits[4], digits_labels[4].long())
 
         loss = length_loss + digit1_loss + digit2_loss + digit3_loss + digit4_loss + digit5_loss
         return loss

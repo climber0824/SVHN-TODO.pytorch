@@ -41,7 +41,7 @@ class Dataset(torch.utils.data.Dataset):
         return self._length
         # TODO: CODE END
 
-    def __getitem__(self, index) -> Tuple[Tensor, Tensor]:
+    def __getitem__(self, index) -> Tuple[Tensor, Tensor, Tensor]:
         # TODO: CODE BEGIN
         # raise NotImplementedError
         # image_path = sorted(glob.glob(os.path.join(self._path_to_data, self._mode.value, '*')))[index]
@@ -58,6 +58,7 @@ class Dataset(torch.utils.data.Dataset):
         _image_filename = ''.join(chr(i) for i in _obj_name[:])
         _path_to_image = os.path.join(self._path_to_data, self._mode.value, _image_filename)
         image = Image.open(_path_to_image)
+        image = image.resize((64, 64))
         image = self.preprocess(image)
 
         map_of_bbox = {}
@@ -72,7 +73,6 @@ class Dataset(torch.utils.data.Dataset):
         digits = [10, 10, 10, 10, 10]
         for idx in range(length):
             digits[idx] = map_of_bbox['label'][idx]
-
         return image, length, digits
         # TODO: CODE END
 
@@ -81,7 +81,7 @@ class Dataset(torch.utils.data.Dataset):
         # TODO: CODE BEGIN
         # raise NotImplementedError
         transform = transforms.Compose([
-            # transforms.RandomCrop([54, 54]),
+            transforms.RandomCrop([54, 54]),
             transforms.ToTensor(),
             transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])
         ])
@@ -91,6 +91,7 @@ class Dataset(torch.utils.data.Dataset):
 
 if __name__ == '__main__':
     _dataset = Dataset(path_to_data_dir='./data', mode=Dataset.Mode.TRAIN)
-    _image, _length, _digits = _dataset[6666]
+    print(len(_dataset))
+    _image, _length, _digits = _dataset[7844]
     print('length: %d' % _length)
     print('digits: %d, %d, %d, %d, %d' % (_digits[0], _digits[1], _digits[2], _digits[3], _digits[4]))
