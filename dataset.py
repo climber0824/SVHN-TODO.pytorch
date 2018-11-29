@@ -38,7 +38,7 @@ class Dataset(torch.utils.data.Dataset):
     def __len__(self) -> int:
         # TODO: CODE BEGIN
         # raise NotImplementedError
-        return self._length
+        return self._length-2
         # TODO: CODE END
 
     def __getitem__(self, index) -> Tuple[Tensor, Tensor, Tensor]:
@@ -48,7 +48,6 @@ class Dataset(torch.utils.data.Dataset):
         # image = Image.open(image_path)
         # print(type(image))
         # image = self.preprocess(image)
-
         path_to_mat = os.path.join(self._path_to_data, self._mode.value, 'digitStruct.mat')
         _h5py_file = h5py.File(path_to_mat)
         _h5py_data = _h5py_file.get('digitStruct')

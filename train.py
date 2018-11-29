@@ -23,6 +23,7 @@ def _train(path_to_data_dir: str, path_to_checkpoints_dir: str):
     steps_to_show_loss = TrainingConfig.StepsToCheckLoss
     steps_to_check = TrainingConfig.StepsToValidate
     steps_to_decay = TrainingConfig.StepsToDecayLearningRate
+    steps_to_save_model = TrainingConfig.StepsToSnapshot
     decay_rate = TrainingConfig.DecayRate
 
     train_loader = DataLoader(Dataset(path_to_data_dir, Dataset.Mode.TRAIN),
@@ -55,7 +56,7 @@ def _train(path_to_data_dir: str, path_to_checkpoints_dir: str):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            print(step)
+
             step += 1
             losses.append(loss)
 
@@ -67,9 +68,9 @@ def _train(path_to_data_dir: str, path_to_checkpoints_dir: str):
                 print(f'[Step {step}] Loss = {avg_loss:.6f}, learning_rate = {learning_rate} '
                       f'({steps_per_sec:.2f} steps/sec)')
 
-            if step % steps_to_decay == 0:
-                learning_rate = learning_rate * (decay_rate ** (step // steps_to_decay))
-                optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9, weight_decay=0.0005)
+            # if step % steps_to_decay == 0:
+            #     learning_rate = learning_rate * (decay_rate ** (step // steps_to_decay))
+            #     optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9, weight_decay=0.0005)
             '''
             if step % steps_to_check != 0:
                 # evaluate on validation set
@@ -79,6 +80,10 @@ def _train(path_to_data_dir: str, path_to_checkpoints_dir: str):
             * check accuracy
             * check patience
             '''
+
+            if step % steps_to_save_model == 0:
+                path_to_checkpoint = model.save(path_to_checkpoints_dir, step)
+                print(f'Model saved to {path_to_checkpoint}')
 
         # TODO: CODE END
 
