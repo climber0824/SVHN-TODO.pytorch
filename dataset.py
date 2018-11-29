@@ -31,8 +31,8 @@ class Dataset(torch.utils.data.Dataset):
         self._path_to_data = path_to_data_dir
         self._mode = mode
         self._length = len(glob.glob(os.path.join(self._path_to_data, self._mode.value, '*')))
-        if is_train:
-            self._length += len(glob.glob(os.path.join(self._path_to_data, 'extra/*')))
+        # if is_train:
+        #     self._length += len(glob.glob(os.path.join(self._path_to_data, 'extra/*')))
         # TODO: CODE END
 
     def __len__(self) -> int:
