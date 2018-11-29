@@ -9,8 +9,9 @@ from model import Model
 
 def _infer(path_to_image: str, path_to_checkpoint: str):
     image = Image.open(path_to_image)
+    print(type(image))
     image = Dataset.preprocess(image)
-
+    print(type(image))
     model = Model().cuda()
     model.load(path_to_checkpoint)
 
@@ -35,14 +36,15 @@ def _infer(path_to_image: str, path_to_checkpoint: str):
 
 if __name__ == '__main__':
     def main():
-        parser = argparse.ArgumentParser()
-        parser.add_argument('image', type=str, help='path to image')
-        parser.add_argument('-c', '--checkpoint', help='path to checkpoint')
-        args = parser.parse_args()
+        # parser = argparse.ArgumentParser()
+        # parser.add_argument('image', type=str, help='path to image')
+        # parser.add_argument('-c', '--checkpoint', help='path to checkpoint')
+        # args = parser.parse_args()
 
-        path_to_image = args.image
-        path_to_checkpoint = args.checkpoint
-
+        # path_to_image = args.image
+        # path_to_checkpoint = args.checkpoint
+        path_to_image = './images/15.png'
+        path_to_checkpoint = './checkpoints'
         _infer(path_to_image, path_to_checkpoint)
 
     main()
