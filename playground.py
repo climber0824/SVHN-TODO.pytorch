@@ -21,11 +21,11 @@ import numpy as np
 #     length = len(map_of_bbox['label'])
 #     lengthes.append(length)
 
-    # if length == 0:
-    #     _name_ref = _name[index][0]
-    #     _obj_name = _h5py_data.get(_name_ref)
-    #     _image_filename = ''.join(chr(i) for i in _obj_name[:])
-    #     print(_image_filename)
+# if length == 0:
+#     _name_ref = _name[index][0]
+#     _obj_name = _h5py_data.get(_name_ref)
+#     _image_filename = ''.join(chr(i) for i in _obj_name[:])
+#     print(_image_filename)
 
 # print(np.unique(lengthes))
 

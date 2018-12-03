@@ -4,6 +4,7 @@ from typing import Tuple
 
 import torch
 import torch.nn.functional
+import numpy as np
 from torch import nn, Tensor
 
 
@@ -105,23 +106,49 @@ class Model(nn.Module):
         x = self._features(images)
         x = x.view(x.size(0), 192*7*7)
         x = self._classifier(x)
-        length_logits, digits_logits = self._digit_length(x), [self._digit1(x),
-                                                               self._digit2(x),
-                                                               self._digit3(x),
-                                                               self._digit4(x),
-                                                               self._digit5(x)]
-        return length_logits, digits_logits
+        # length_logits, digits_logits = self._digit_length(x), [self._digit1(x),
+        #                                                        self._digit2(x),
+        #                                                        self._digit3(x),
+        #                                                        self._digit4(x),
+        #                                                        self._digit5(x)]
+        length_logits = self._digit_length(x)
+        digit1_logit = self._digit1(x)
+        digit2_logit = self._digit2(x)
+        digit3_logit = self._digit3(x)
+        digit4_logit = self._digit4(x)
+        digit5_logit = self._digit5(x)
+        # length_logits = torch.Tensor(length_logits)
+        # digits_logits = torch.Tensor(digits_logits).view(5, 11)
+        # return length_logits, digits_logits
+        return length_logits, digit1_logit, digit2_logit, digit3_logit, digit4_logit, digit5_logit
         # TODO: CODE END
 
-    def loss(self, length_logits: Tensor, digits_logits: Tensor, length_labels: Tensor, digits_labels: Tensor) -> Tensor:
+    # def loss(self, length_logits: Tensor, digits_logits: Tensor, length_labels: Tensor, digits_labels: Tensor) -> Tensor:
+    #     # TODO: CODE BEGIN
+    #     # raise NotImplementedError
+    #     length_loss = torch.nn.functional.cross_entropy(length_logits, length_labels.long())
+    #     # digit_loss = torch.nn.functional.cross_entropy(digits_logits, digits_labels)
+    #     digit1_loss = torch.nn.functional.cross_entropy(digits_logits[0], digits_labels[0].long())  # 5x(32, 11) ; 32x(5, 11)
+    #     digit2_loss = torch.nn.functional.cross_entropy(digits_logits[1], digits_labels[1].long())
+    #     digit3_loss = torch.nn.functional.cross_entropy(digits_logits[2], digits_labels[2].long())
+    #     digit4_loss = torch.nn.functional.cross_entropy(digits_logits[3], digits_labels[3].long())
+    #     digit5_loss = torch.nn.functional.cross_entropy(digits_logits[4], digits_labels[4].long())
+    #
+    #     loss = length_loss + digit1_loss + digit2_loss + digit3_loss + digit4_loss + digit5_loss
+    #     # loss = digit1_loss + digit2_loss + digit3_loss + digit4_loss + digit5_loss
+    #     return loss
+    #     # TODO: CODE END
+
+    def loss(self, length_logits, digit1_logit, digit2_logit, digit3_logit, digit4_logit, digit5_logit, length_labels,
+             digit1_label, digit2_label, digit3_label, digit4_label, digit5_label):
         # TODO: CODE BEGIN
         # raise NotImplementedError
-        length_loss = torch.nn.functional.cross_entropy(length_logits, length_labels)
-        digit1_loss = torch.nn.functional.cross_entropy(digits_logits[0], digits_labels[0].long())
-        digit2_loss = torch.nn.functional.cross_entropy(digits_logits[1], digits_labels[1].long())
-        digit3_loss = torch.nn.functional.cross_entropy(digits_logits[2], digits_labels[2].long())
-        digit4_loss = torch.nn.functional.cross_entropy(digits_logits[3], digits_labels[3].long())
-        digit5_loss = torch.nn.functional.cross_entropy(digits_logits[4], digits_labels[4].long())
+        length_loss = torch.nn.functional.cross_entropy(length_logits, length_labels.long())
+        digit1_loss = torch.nn.functional.cross_entropy(digit1_logit, digit1_label.long())
+        digit2_loss = torch.nn.functional.cross_entropy(digit2_logit, digit2_label.long())
+        digit3_loss = torch.nn.functional.cross_entropy(digit3_logit, digit3_label.long())
+        digit4_loss = torch.nn.functional.cross_entropy(digit4_logit, digit4_label.long())
+        digit5_loss = torch.nn.functional.cross_entropy(digit5_logit, digit5_label.long())
 
         loss = length_loss + digit1_loss + digit2_loss + digit3_loss + digit4_loss + digit5_loss
         return loss

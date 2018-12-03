@@ -60,7 +60,7 @@ class Dataset(torch.utils.data.Dataset):
         image = Image.open(_path_to_image)
         image = image.resize((64, 64))
         image = self.preprocess(image)
-        image = image.view(64, 64, 3)
+        image = image.view(3, 54, 54)
 
         map_of_bbox = {}
         item = _h5py_file['digitStruct']['bbox'][index].item()
@@ -71,35 +71,35 @@ class Dataset(torch.utils.data.Dataset):
             map_of_bbox[key] = values
 
         # Without One-Hot
-        # length = len(map_of_bbox['label'])      # length = 1 to 5
+        length = len(map_of_bbox['label'])      # length = 1 to 5
 
         # With One-Hot
-        a = len(map_of_bbox['label'])   # a = 1, 2, 3, 4, 5
-        length = [0, 0, 0, 0, 0]
-        length[a-1] = 1     # length = [0, 1, 0, 0, 0]
+        # a = len(map_of_bbox['label'])   # a = 1, 2, 3, 4, 5
+        # length = [0, 0, 0, 0, 0]
+        # length[a-1] = 1     # length = [0, 1, 0, 0, 0]
 
         # Without One-Hot
-        # digits = [10, 10, 10, 10, 10]
-        # for idx in range(length):
-        #     digits[idx] = map_of_bbox['label'][idx]
-        #     if digits[idx] == 10:
-        #         digits[idx] = 0       # digits = [1, 9, 0, 0, 0, 0]
+        digits = [10, 10, 10, 10, 10]
+        for idx in range(length):
+            digits[idx] = map_of_bbox['label'][idx]
+            if digits[idx] == 10:
+                digits[idx] = 0       # digits = [1, 9, 0, 0, 0]
 
         # With One-Hot
-        digits = []
-        for idx in range(a):
-            digit = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
-            if map_of_bbox['label'][idx] == 10:
-                pass
-            else:
-                digit[-1] = 0
-                digit[int(map_of_bbox['label'][idx])] = 1
-            digits.append(digit)
-        digit = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
-        for _ in range(5-a):
-            digits.append(digit)
+        # digits = []
+        # for idx in range(length):
+        #     digit = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+        #     if map_of_bbox['label'][idx] == 10:
+        #         pass
+        #     else:
+        #         digit[-1] = 0
+        #         digit[int(map_of_bbox['label'][idx])] = 1
+        #     digits.append(digit)
+        # digit = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+        # for _ in range(5-length):
+        #     digits.append(digit)
 
-        length = torch.Tensor(length)
+        # length = torch.Tensor(length)
         digits = torch.Tensor(digits)
         return image, length, digits
         # TODO: CODE END
@@ -109,7 +109,7 @@ class Dataset(torch.utils.data.Dataset):
         # TODO: CODE BEGIN
         # raise NotImplementedError
         transform = transforms.Compose([
-            # transforms.RandomCrop([54, 54]),
+            transforms.RandomCrop([54, 54]),
             transforms.ToTensor(),
             transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])
         ])
@@ -119,10 +119,13 @@ class Dataset(torch.utils.data.Dataset):
 
 if __name__ == '__main__':
     _dataset = Dataset(path_to_data_dir='./data', mode=Dataset.Mode.TRAIN)
-    print(len(_dataset))
-    _image, _length, _digits = _dataset[666]
-    # print('length: %s' % _length.nonzero())
-    # print('digits: %s' % _digits.nonzero())
-    print('image type: %s' % type(_image))
-    print('length type: %s' % type(_length))
-    print('digits type: %s' % type(_digits))
+    _image, _length, _digits = _dataset[1111]
+    print(f'dataset length: {len(_dataset)}')
+    print(f'image type: {type(_image)}')
+    print(f'length type: {type(_length)}')
+    print(f'digits type: {type(_digits)}')
+    print(f'image shape: {np.array(_image).shape}')
+    print(f'length shape: {np.array(_length).shape}')
+    print(f'digits shape: {np.array(_digits).shape}')
+    print(_length)
+    print(_digits)

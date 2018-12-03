@@ -55,8 +55,12 @@ def _train(path_to_data_dir: str, path_to_checkpoints_dir: str):
             images, length_labels, digits_labels = (Variable(images.cuda()),
                                                     Variable(length_labels.cuda()),
                                                     [Variable(digit_labels.cuda()) for digit_labels in digits_labels])
-            length_logits, digits_logits = model.train()(images)
-            loss = model.loss(length_logits, digits_logits, length_labels, digits_labels)
+            # length_logits, digits_logits = model.train().forward(images)
+            length_logits, digit1_logit, digit2_logit, digit3_logit, digit4_logit, digit5_logit = model.train().forward(images)
+            # loss = model.loss(length_logits, digits_logits, length_labels, digits_labels)
+            loss = model.loss(length_logits, digit1_logit, digit2_logit, digit3_logit, digit4_logit, digit5_logit,
+                              length_labels, digits_labels[0], digits_labels[1], digits_labels[2], digits_labels[3],
+                              digits_labels[4])
 
             optimizer.zero_grad()
             loss.backward()
