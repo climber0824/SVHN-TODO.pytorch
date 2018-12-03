@@ -1,5 +1,5 @@
 class TrainingConfig(object):
-    Batch_Size = 16
+    Batch_Size = 32
     Learning_Rate = 1e-4
     Patience = 100
     StepsToCheckLoss = 100

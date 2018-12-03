@@ -1,6 +1,8 @@
 import argparse
 import os
 import time
+import numpy as np
+import torch
 
 from torch.utils.data import DataLoader
 from torch import optim
@@ -47,6 +49,9 @@ def _train(path_to_data_dir: str, path_to_checkpoints_dir: str):
         # TODO: CODE BEGIN
         # raise NotImplementedError
         for batch_idx, (images, length_labels, digits_labels) in enumerate(train_loader):
+            # images = np.array(images)
+            # images = np.expand_dims(np.dot(images, [0.2989, 0.5870, 0.1140]), axis=3).astype(np.float32)
+            # images = torch.from_numpy(images)
             images, length_labels, digits_labels = (Variable(images.cuda()),
                                                     Variable(length_labels.cuda()),
                                                     [Variable(digit_labels.cuda()) for digit_labels in digits_labels])

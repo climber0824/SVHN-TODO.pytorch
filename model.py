@@ -91,7 +91,7 @@ class Model(nn.Module):
             hidden9,
             hidden10
         )
-        self._digit_length = nn.Sequential(nn.Linear(3072, 7))
+        self._digit_length = nn.Sequential(nn.Linear(3072, 6))
         self._digit1 = nn.Sequential(nn.Linear(3072, 11))
         self._digit2 = nn.Sequential(nn.Linear(3072, 11))
         self._digit3 = nn.Sequential(nn.Linear(3072, 11))
