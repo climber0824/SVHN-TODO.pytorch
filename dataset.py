@@ -57,6 +57,9 @@ class Dataset(torch.utils.data.Dataset):
         _obj_name = _h5py_data.get(_name_ref)
         _image_filename = ''.join(chr(i) for i in _obj_name[:])
         _path_to_image = os.path.join(self._path_to_data, self._mode.value, _image_filename)
+        if _path_to_image == './data/train/29930.png':
+            new_index = index + 1
+            return self.__getitem__(new_index)
         image = Image.open(_path_to_image)
         image = image.resize((64, 64))
         image = self.preprocess(image)
@@ -81,7 +84,10 @@ class Dataset(torch.utils.data.Dataset):
         # Without One-Hot
         digits = [10, 10, 10, 10, 10]
         for idx in range(length):
-            digits[idx] = map_of_bbox['label'][idx]
+            try:
+                digits[idx] = map_of_bbox['label'][idx]
+            except:
+                print(_image_filename)
             if digits[idx] == 10:
                 digits[idx] = 0       # digits = [1, 9, 0, 0, 0]
 
@@ -99,8 +105,8 @@ class Dataset(torch.utils.data.Dataset):
         # for _ in range(5-length):
         #     digits.append(digit)
 
-        # length = torch.Tensor(length)
-        digits = torch.Tensor(digits)
+        # length = torch.Tensor([length])
+        # digits = torch.Tensor(digits)
         return image, length, digits
         # TODO: CODE END
 

@@ -21,24 +21,23 @@ def _train(path_to_data_dir: str, path_to_checkpoints_dir: str):
     # raise NotImplementedError
     batch_size = TrainingConfig.Batch_Size
     learning_rate = TrainingConfig.Learning_Rate
-    patience = TrainingConfig.Patience
     steps_to_show_loss = TrainingConfig.StepsToCheckLoss
-    steps_to_check = TrainingConfig.StepsToValidate
-    steps_to_decay = TrainingConfig.StepsToDecayLearningRate
     steps_to_save_model = TrainingConfig.StepsToSnapshot
-    decay_rate = TrainingConfig.DecayRate
+    steps_to_decay = TrainingConfig.StepsToDecay
+    step_to_terminate = TrainingConfig.StepsToFinish
 
     train_loader = DataLoader(Dataset(path_to_data_dir, Dataset.Mode.TRAIN),
                               batch_size=batch_size, shuffle=True)
 
     model = Model()
+    model.load('./checkpoints/model-201812080141-16500.pth')
     model.cuda()
 
     optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9, weight_decay=0.0005)
 
-    step = 0
+    step = 16500
+    # step = 0
     time_checkpoint = time.time()
-    best_accuracy = 0.0
     losses = deque(maxlen=100)
     should_stop = False
 
@@ -55,12 +54,8 @@ def _train(path_to_data_dir: str, path_to_checkpoints_dir: str):
             images, length_labels, digits_labels = (Variable(images.cuda()),
                                                     Variable(length_labels.cuda()),
                                                     [Variable(digit_labels.cuda()) for digit_labels in digits_labels])
-            # length_logits, digits_logits = model.train().forward(images)
-            length_logits, digit1_logit, digit2_logit, digit3_logit, digit4_logit, digit5_logit = model.train().forward(images)
-            # loss = model.loss(length_logits, digits_logits, length_labels, digits_labels)
-            loss = model.loss(length_logits, digit1_logit, digit2_logit, digit3_logit, digit4_logit, digit5_logit,
-                              length_labels, digits_labels[0], digits_labels[1], digits_labels[2], digits_labels[3],
-                              digits_labels[4])
+            length_logits, digits_logits = model.train().forward(images)
+            loss = model.loss(length_logits, digits_logits, length_labels, digits_labels)
 
             optimizer.zero_grad()
             loss.backward()
@@ -77,22 +72,16 @@ def _train(path_to_data_dir: str, path_to_checkpoints_dir: str):
                 print(f'[Step {step}] Loss = {avg_loss:.6f}, learning_rate = {learning_rate} '
                       f'({steps_per_sec:.2f} steps/sec)')
 
-            # if step % steps_to_decay == 0:
-            #     learning_rate = learning_rate * (decay_rate ** (step // steps_to_decay))
-            #     optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9, weight_decay=0.0005)
-            '''
-            if step % steps_to_check != 0:
-                # evaluate on validation set
-                continue
-                
-            * evaluate on validation set
-            * check accuracy
-            * check patience
-            '''
-
             if step % steps_to_save_model == 0:
                 path_to_checkpoint = model.save(path_to_checkpoints_dir, step)
                 print(f'Model saved to {path_to_checkpoint}')
+
+            if step % steps_to_decay == 0:
+                learning_rate = TrainingConfig.Learning_Rate * (0.5 ** (step/steps_to_decay))
+                optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9, weight_decay=0.0005)
+
+            if step % step_to_terminate == 0:
+                should_stop = True
 
         # TODO: CODE END
 
@@ -103,7 +92,7 @@ if __name__ == '__main__':
     def main():
         parser = argparse.ArgumentParser()
         parser.add_argument('-d', '--data_dir', default='./data', help='path to data directory')
-        parser.add_argument('-c', '--checkpoints_dir', default='./checkpoints', help='path to checkpoints directory')
+        parser.add_argument('-c', '--checkpoints_dir', default='./checkpoints/branch', help='path to checkpoints directory')
         args = parser.parse_args()
 
         path_to_data_dir = args.data_dir

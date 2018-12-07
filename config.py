@@ -1,10 +1,11 @@
 class TrainingConfig(object):
     Batch_Size = 32
-    Learning_Rate = 1e-4
-    Patience = 100
-    StepsToCheckLoss = 100
-    StepsToValidate = 1000
-    StepsToSnapshot = 1000
-    StepsToDecayLearningRate = 10000
-    StepsToFinish = 10000
-    DecayRate = 0.9
+    Learning_Rate = 1e-5
+    StepsToCheckLoss = 10
+    StepsToSnapshot = 5000
+    StepsToDecay = 30000
+    StepsToFinish = 100000
+
+
+class TestingConfig(object):
+    Batch_Size = 256
