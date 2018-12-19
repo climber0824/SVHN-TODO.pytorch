@@ -8,17 +8,13 @@ import os
 import h5py
 
 import numpy as np
-import scipy.io as sio
-import matplotlib.pyplot as plt
 
 from PIL import Image
 from torch import Tensor
 from torchvision import transforms
-from sklearn.preprocessing import OneHotEncoder
 
 
 class Dataset(torch.utils.data.Dataset):
-
     class Mode(Enum):
         TRAIN = 'train'
         TEST = 'test'
@@ -45,25 +41,17 @@ class Dataset(torch.utils.data.Dataset):
     def __getitem__(self, index) -> Tuple[Tensor, Tensor, Tensor]:
         # TODO: CODE BEGIN
         # raise NotImplementedError
-        # image_path = sorted(glob.glob(os.path.join(self._path_to_data, self._mode.value, '*')))[index]
-        # image = Image.open(image_path)
-        # print(type(image))
-        # image = self.preprocess(image)
         path_to_mat = os.path.join(self._path_to_data, self._mode.value, 'digitStruct.mat')
         _h5py_file = h5py.File(path_to_mat)
-        _h5py_data = _h5py_file.get('digitStruct')
-        _name = _h5py_data.get('name')
-        _name_ref = _name[index][0]
-        _obj_name = _h5py_data.get(_name_ref)
+        _name_ref = _h5py_file.get('digitStruct').get('name')[index][0]
+        _obj_name = _h5py_file.get('digitStruct').get(_name_ref)
         _image_filename = ''.join(chr(i) for i in _obj_name[:])
         _path_to_image = os.path.join(self._path_to_data, self._mode.value, _image_filename)
+
+        # 29930.png has some unknown problem.
         if _path_to_image == './data/train/29930.png':
             new_index = index + 1
             return self.__getitem__(new_index)
-        image = Image.open(_path_to_image)
-        image = image.resize((64, 64))
-        image = self.preprocess(image)
-        image = image.view(3, 54, 54)
 
         map_of_bbox = {}
         item = _h5py_file['digitStruct']['bbox'][index].item()
@@ -73,42 +61,48 @@ class Dataset(torch.utils.data.Dataset):
                 attr.value[0][0]]
             map_of_bbox[key] = values
 
-        # Without One-Hot
-        length = len(map_of_bbox['label'])      # length = 1 to 5
+        _left, _top, _right, _bottom = self.get_bounding_box(map_of_bbox)
+        image = Image.open(_path_to_image)
+        image = image.crop((_left, _top, _right, _bottom))
+        image = image.resize([64, 64])
+        image = self.preprocess(image)
+        image = image.view(3, 54, 54)
 
-        # With One-Hot
-        # a = len(map_of_bbox['label'])   # a = 1, 2, 3, 4, 5
-        # length = [0, 0, 0, 0, 0]
-        # length[a-1] = 1     # length = [0, 1, 0, 0, 0]
+        length = len(map_of_bbox['label'])
 
-        # Without One-Hot
-        digits = [10, 10, 10, 10, 10]
+        digits = [10, 10, 10, 10, 10, 10]
         for idx in range(length):
-            try:
-                digits[idx] = map_of_bbox['label'][idx]
-            except:
-                print(_image_filename)
+            digits[idx] = map_of_bbox['label'][idx]
             if digits[idx] == 10:
-                digits[idx] = 0       # digits = [1, 9, 0, 0, 0]
+                digits[idx] = 0
 
-        # With One-Hot
-        # digits = []
-        # for idx in range(length):
-        #     digit = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
-        #     if map_of_bbox['label'][idx] == 10:
-        #         pass
-        #     else:
-        #         digit[-1] = 0
-        #         digit[int(map_of_bbox['label'][idx])] = 1
-        #     digits.append(digit)
-        # digit = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
-        # for _ in range(5-length):
-        #     digits.append(digit)
-
-        # length = torch.Tensor([length])
-        # digits = torch.Tensor(digits)
         return image, length, digits
         # TODO: CODE END
+
+    @staticmethod
+    def get_bounding_box(information: dict) -> Tuple[int, int, int, int]:
+        """
+        :param information: annotations of each digit
+        :return: cropped range for images
+        """
+        bbox_left = int(np.min(information['left']))
+        bbox_top = int(np.min(information['top']))
+        bbox_right = int(
+            np.max(information['left']) + [information['width'][index] for index in range(len(information['left']))
+                                           if information['left'][index] == np.max(information['left'])][0])
+        bbox_bottom = int(np.max(
+            [information['top'][index] + information['height'][index] for index in range(len(information['top']))]))
+        bbox_width = bbox_right - bbox_left
+        bbox_height = bbox_bottom - bbox_top
+
+        cropped_left = int(round(bbox_left - bbox_width * 0.15))
+        cropped_top = int(round(bbox_top - bbox_height * 0.15))
+        cropped_width = int(round(bbox_width * 1.3))
+        cropped_height = int(round(bbox_height * 1.3))
+        cropped_right = cropped_left + cropped_width
+        cropped_bottom = cropped_top + cropped_height
+
+        return cropped_left, cropped_top, cropped_right, cropped_bottom
 
     @staticmethod
     def preprocess(image: PIL.Image.Image) -> Tensor:
@@ -124,7 +118,7 @@ class Dataset(torch.utils.data.Dataset):
 
 
 if __name__ == '__main__':
-    _dataset = Dataset(path_to_data_dir='./data', mode=Dataset.Mode.TRAIN)
+    _dataset = Dataset(path_to_data_dir='./data', mode=Dataset.Mode.TEST)
     _image, _length, _digits = _dataset[1111]
     print(f'dataset length: {len(_dataset)}')
     print(f'image type: {type(_image)}')

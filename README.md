@@ -58,3 +58,18 @@
 
 * [Multi-digit Number Recognition from Street View Imagery using Deep Convolutional Neural Networks](http://arxiv.org/pdf/1312.6082.pdf)
 * [The Street View House Numbers (SVHN) Dataset](http://ufldl.stanford.edu/housenumbers/)
+
+## Appendix
+
+Numbers of images for each length, not including extra dataset.
+
+ length  |  train  |  test
+:-------:|:-------:|:------:
+    0    |    0    |    0
+    1    |   5137  |   2483
+    2    |  18130  |   8356
+    3    |   8691  |   2081
+    4    |   1434  |   146
+    5    |    9    |    2
+    6    |    1    |    0
+  total  |  33402  |  13068

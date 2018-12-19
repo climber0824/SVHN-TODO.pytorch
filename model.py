@@ -4,7 +4,6 @@ from typing import Tuple
 
 import torch
 import torch.nn.functional
-import numpy as np
 from torch import nn, Tensor
 
 
@@ -71,7 +70,7 @@ class Model(nn.Module):
             nn.Dropout(0.2)
         )
         hidden9 = nn.Sequential(
-            nn.Linear(192*7*7, 3072),
+            nn.Linear(192 * 7 * 7, 3072),
             nn.ReLU()
         )
         hidden10 = nn.Sequential(
@@ -104,19 +103,14 @@ class Model(nn.Module):
         # TODO: CODE BEGIN
         # raise NotImplementedError
         x = self._features(images)
-        x = x.view(x.size(0), 192*7*7)
+        x = x.view(x.size(0), 192 * 7 * 7)
         x = self._classifier(x)
+
         length_logits, digits_logits = self._digit_length(x), [self._digit1(x),
                                                                self._digit2(x),
                                                                self._digit3(x),
                                                                self._digit4(x),
                                                                self._digit5(x)]
-
-        # length_logits = torch.Tensor(length_logits)
-        # digits_logits = torch.Tensor([digits_logits])
-        # print(type(length_logits))
-        # print(type(digits_logits))
-
         return length_logits, digits_logits
         # TODO: CODE END
 
@@ -124,7 +118,7 @@ class Model(nn.Module):
         # TODO: CODE BEGIN
         # raise NotImplementedError
         length_loss = torch.nn.functional.cross_entropy(length_logits, length_labels)
-        digit1_loss = torch.nn.functional.cross_entropy(digits_logits[0], digits_labels[0].long())  # 5x(32, 11) ; 32x(5, 11)
+        digit1_loss = torch.nn.functional.cross_entropy(digits_logits[0], digits_labels[0].long())
         digit2_loss = torch.nn.functional.cross_entropy(digits_logits[1], digits_labels[1].long())
         digit3_loss = torch.nn.functional.cross_entropy(digits_logits[2], digits_labels[2].long())
         digit4_loss = torch.nn.functional.cross_entropy(digits_logits[3], digits_labels[3].long())
